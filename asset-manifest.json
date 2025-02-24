@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/profit-calculator/static/css/main.2b33e5d3.css",
+    "main.js": "/profit-calculator/static/js/main.4b30f0e2.js",
+    "static/js/453.ed3810f9.chunk.js": "/profit-calculator/static/js/453.ed3810f9.chunk.js",
+    "index.html": "/profit-calculator/index.html",
+    "main.2b33e5d3.css.map": "/profit-calculator/static/css/main.2b33e5d3.css.map",
+    "main.4b30f0e2.js.map": "/profit-calculator/static/js/main.4b30f0e2.js.map",
+    "453.ed3810f9.chunk.js.map": "/profit-calculator/static/js/453.ed3810f9.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2b33e5d3.css",
+    "static/js/main.4b30f0e2.js"
+  ]
+}
