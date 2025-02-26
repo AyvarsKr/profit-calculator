@@ -46,7 +46,7 @@ const ProfitCalculator = () => {
 
     // Рассчитываем процент чистой прибыли относительно суммы продажи
     const profitPercentFromSale = (netProfitValue / salePrice) * 100;
-    setProfitPercentOfSale(profitPercentFromSale.toFixed(2)); // Округляем до 2 знаков
+    setProfitPercentOfSale(profitPercentFromSale.toFixed(2)); // Округляем до 2 знаfков
 
     // Формула для вывода шагов
     const stepByStep = `
@@ -133,11 +133,11 @@ const ProfitCalculator = () => {
         </div>
       )}
 
-      {priceForProfitPercent !== null && !error && (
+      {/* {priceForProfitPercent !== null && !error && (
         <div className="result">
           <h3>Для чистой прибыли {profitPercentage}% необходима цена продажи: {priceForProfitPercent} ₽</h3>
         </div>
-      )}
+      )} */}
 
       {profitPercentOfSale !== null && !error && (
         <div className="result">
