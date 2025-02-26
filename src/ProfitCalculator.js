@@ -1,22 +1,20 @@
-// ProfitCalculator.js
 import React, { useState } from 'react';
-import './ProfitCalculator.css'; // Импортируем стили
+import './ProfitCalculator.css';
 
 const ProfitCalculator = () => {
-  const [purchasePrice, setPurchasePrice] = useState(0); // Закупочная цена
+  const [purchasePrice, setPurchasePrice] = useState(0); // Закупочная цена с НДС
   const [salePrice, setSalePrice] = useState(0); // Сумма продажи
   const [tax, setTax] = useState(15); // Налог с прибыли (по умолчанию 15%)
-  const [includeVAT, setIncludeVAT] = useState(false); // Включен ли НДС в закупочную цену
+  const [includeVAT, setIncludeVAT] = useState(true); // Включен ли НДС в закупочную цену
   const [netProfit, setNetProfit] = useState(null); // Чистая прибыль
   const [priceForProfitPercent, setPriceForProfitPercent] = useState(null); // Цена для заданного процента прибыли
-  const [profitPercentage, setProfitPercentage] = useState(7); // Процент чистой прибыли
+  const [profitPercentage, setProfitPercentage] = useState(10); // Процент чистой прибыли (по умолчанию 10%)
+  const [profitPercentOfSale, setProfitPercentOfSale] = useState(null); // Процент чистой прибыли от продажи
   const [steps, setSteps] = useState(''); // Формулы и шаги
-  const [error, setError] = useState('');
+  const [error, setError] = useState(''); // Ошибки ввода
 
   const calculateProfit = () => {
-    // Устанавливаем НДС (20%)
-    const vatRate = 0.20;
-    const vatAmount = purchasePrice * vatRate; // Рассчитываем НДС
+    const vatRate = 0.20; // НДС 20%
 
     // Проверяем, что введены правильные значения
     if (isNaN(purchasePrice) || isNaN(salePrice) || purchasePrice <= 0 || salePrice <= 0 || isNaN(profitPercentage) || profitPercentage <= 0) {
@@ -26,31 +24,36 @@ const ProfitCalculator = () => {
       setError('');
     }
 
-    // Если НДС включен, вычитаем его из закупочной цены
-    const adjustedPurchasePrice = includeVAT ? purchasePrice / (1 + vatRate) : purchasePrice;
+    // Если НДС включен, вычитаем его из закупочной цены для расчетов
+    const purchasePriceWithoutVAT = purchasePrice / (1 + vatRate);
+
+    // Рассчитываем валовую прибыль (цена продажи без НДС минус закупочная цена без НДС)
+    const grossProfit = salePrice / (1 + vatRate) - purchasePriceWithoutVAT;
 
     // Рассчитываем налог с прибыли
     const profitTaxRate = tax / 100;
-
-    // Шаг 1: Рассчитываем чистую прибыль
-    const profitBeforeTax = salePrice - adjustedPurchasePrice - vatAmount; // П profit без учета налога
-    const netProfitValue = profitBeforeTax * (1 - profitTaxRate); // Чистая прибыль после налога
+    const netProfitValue = grossProfit * (1 - profitTaxRate); // Чистая прибыль после налога
 
     setNetProfit(netProfitValue.toFixed(2)); // Округляем до 2 знаков после запятой
 
-    // Шаг 2: Рассчитываем цену продажи для получения заданного процента чистой прибыли
-    // Учитываем НДС, если включен
-    const priceToEarnProfitPercent = (adjustedPurchasePrice * (1 + vatRate)) / (1 - profitPercentage / 100); // Цена для заданного процента
+    // Рассчитываем цену продажи для заданного процента чистой прибыли
+    const priceForProfit = purchasePriceWithoutVAT / (1 - profitPercentage / 100); // Цена для заданного процента чистой прибыли
 
-    setPriceForProfitPercent(priceToEarnProfitPercent.toFixed(2)); // Округляем до 2 знаков
+    // Учитываем НДС при расчете цены продажи
+    const salePriceForProfit = priceForProfit * (1 + vatRate);
+
+    setPriceForProfitPercent(salePriceForProfit.toFixed(2)); // Округляем до 2 знаков
+
+    // Рассчитываем процент чистой прибыли относительно суммы продажи
+    const profitPercentFromSale = (netProfitValue / salePrice) * 100;
+    setProfitPercentOfSale(profitPercentFromSale.toFixed(2)); // Округляем до 2 знаков
 
     // Формула для вывода шагов
     const stepByStep = `
-      1. Рассчитываем НДС (20% от закупочной цены): ${purchasePrice} * 0.20 = ${vatAmount} ₽.
-      2. Если НДС включен, корректируем закупочную цену: ${adjustedPurchasePrice} ₽.
-      3. Вычисляем прибыль до налога: ${salePrice} - ${adjustedPurchasePrice} - ${vatAmount} = ${profitBeforeTax} ₽.
-      4. Рассчитываем чистую прибыль с учетом налога с прибыли (${tax}%): ${profitBeforeTax} * (1 - ${profitTaxRate}) = ${netProfitValue} ₽.
-      5. Для того чтобы получить ${profitPercentage}% чистой прибыли, цена продажи должна быть: ${(adjustedPurchasePrice * (1 + vatRate))} / (1 - ${profitPercentage / 100}) = ${priceToEarnProfitPercent} ₽.
+      1. Рассчитываем цену закупки без НДС: ${purchasePrice} / (1 + 0.20) = ${purchasePriceWithoutVAT.toFixed(2)} ₽.
+      2. Рассчитываем валовую прибыль: ${salePrice} / (1 + 0.20) - ${purchasePriceWithoutVAT.toFixed(2)} = ${grossProfit.toFixed(2)} ₽.
+      3. Рассчитываем чистую прибыль с учетом налога с прибыли (${tax}%): ${grossProfit.toFixed(2)} * (1 - ${profitTaxRate}) = ${netProfitValue} ₽.
+      4. Для того чтобы получить ${profitPercentage}% чистой прибыли, цена продажи должна быть: ${priceForProfit.toFixed(2)} / (1 - ${profitPercentage / 100}) = ${salePriceForProfit.toFixed(2)} ₽.
     `;
 
     setSteps(stepByStep); // Устанавливаем шаги
@@ -62,12 +65,12 @@ const ProfitCalculator = () => {
 
       <div>
         <label>
-          Закупочная цена:
+          Закупочная цена с НДС (цена с НДС от поставщика):
           <input
             type="number"
             value={purchasePrice}
             onChange={(e) => setPurchasePrice(e.target.value)}
-            placeholder="Введите закупочную цену"
+            placeholder="Введите закупочную цену с НДС"
           />
         </label>
       </div>
@@ -88,8 +91,8 @@ const ProfitCalculator = () => {
         <label>
           Налог с прибыли (%):
           <select value={tax} onChange={(e) => setTax(Number(e.target.value))}>
-            <option value={15}>15%</option>
-            <option value={25}>25%</option>
+            <option value={15}>15% (БОЁК)</option>
+            <option value={25}>25% (СО)</option>
           </select>
         </label>
       </div>
@@ -113,6 +116,7 @@ const ProfitCalculator = () => {
             value={profitPercentage}
             onChange={(e) => setProfitPercentage(Number(e.target.value))}
             placeholder="Введите процент чистой прибыли"
+            min="1"
           />
         </label>
       </div>
@@ -135,6 +139,12 @@ const ProfitCalculator = () => {
         </div>
       )}
 
+      {profitPercentOfSale !== null && !error && (
+        <div className="result">
+          <h3>Процент чистой прибыли относительно суммы продажи: {profitPercentOfSale}%</h3>
+        </div>
+      )}
+
       {/* Формулы и шаги */}
       {steps && (
         <div className="steps">
@@ -142,6 +152,10 @@ const ProfitCalculator = () => {
           <pre>{steps}</pre>
         </div>
       )}
+
+      <div className="info">
+        <p><strong>Важно:</strong> НДС при продаже составляет 20%, а закупочная цена указана с учетом НДС, который можно возместить.</p>
+      </div>
     </div>
   );
 };
